@@ -1,0 +1,13 @@
+{
+  "source": "事故统计表-2018-2024.xlsx",
+  "measure": "No. of cases",
+  "years": [
+    { "year": 2018, "injuries": 129, "deaths": 9, "cases": 242 },
+    { "year": 2019, "injuries": 121, "deaths": 13, "cases": 215 },
+    { "year": 2020, "injuries": 323, "deaths": 13, "cases": 602 },
+    { "year": 2021, "injuries": 608, "deaths": 20, "cases": 951 },
+    { "year": 2022, "injuries": 589, "deaths": 14, "cases": 1014 },
+    { "year": 2023, "injuries": 424, "deaths": 13, "cases": 695 },
+    { "year": 2024, "injuries": 345, "deaths": 13, "cases": 588 }
+  ]
+}

@@ -1,0 +1,49 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble site
+        env:
+          AMAP_JS_API_KEY: ${{ secrets.AMAP_JS_API_KEY }}
+        run: |
+          mkdir -p dist
+          cp index.html styles.css app.js Risk_assess_result_CRITIC_Jenks_name.geojson accident_statistics.json hiking_risk_icon.svg Screenshot_MacLehoseTrail\(Section2\)_ENJOYHIKING.png 乐极生悲-疫后旅客山野意外激增.png dist/
+          printf 'window.TRAIL_RISK_AMAP_API_KEY = "%s";\n' "$AMAP_JS_API_KEY" > dist/amap-config.js
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

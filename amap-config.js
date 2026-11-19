@@ -1,0 +1,1 @@
+window.TRAIL_RISK_AMAP_API_KEY = "";

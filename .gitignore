@@ -1,0 +1,10 @@
+.DS_Store
+
+# Keep source research files out of the public website repository.
+Proposal.pdf
+事故统计表-2018-2024.xlsx
+Risk_assess_result.geojson
+Risk_assess_result_CRITIC_Jenks_Updated.geojson
+Risk_assess_result.qmd
+hiking_trails_original.geojson
+hiking_trails_original.qmd

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1118 1084" role="img" aria-labelledby="title desc">
+  <title id="title">Hiking risk icon</title>
+  <desc id="desc">Green hiker above a rising trail coloured from green through yellow to red.</desc>
+  <defs>
+    <linearGradient id="trail" x1="27" y1="1084" x2="1118" y2="528" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2ec65b"/>
+      <stop offset="0.37" stop-color="#f2e900"/>
+      <stop offset="0.65" stop-color="#ff9900"/>
+      <stop offset="1" stop-color="#f92310"/>
+    </linearGradient>
+    <linearGradient id="hiker" x1="220" y1="200" x2="680" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#268a39"/><stop offset="0.55" stop-color="#2c9b3c"/><stop offset="1" stop-color="#188838"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#trail)" d="M27 1084 142 1009 242 913 327 913 393 846 449 846 545 747 720 747 796 659 900 659 966 576 1056 576 1107 527 1118 527 1118 588 1086 622 1008 622 941 695 861 703 783 793 592 793 466 942 429 942 346 1055 270 1084Z"/>
+  <path fill="#176c31" d="M294 279 316 234 Q322 222 336 222 H371 Q397 222 394 248 L376 296 342 458 304 448 Q276 441 283 414 L302 335 269 364Z"/>
+  <circle cx="472" cy="140" r="69" fill="url(#hiker)"/>
+  <path fill="url(#hiker)" d="M422 244 Q439 239 453 251 L555 349 657 379 Q679 386 677 408 Q674 429 655 434 Q648 435 638 432 L527 400 446 328 411 479 469 491 566 528 Q578 532 584 546 L636 657 Q647 682 627 696 Q603 712 587 687 L532 576 453 547 369 529 Q339 523 346 489 L391 310 319 330 269 419 Q258 440 238 437 Q214 433 216 410 Q216 403 221 394 L273 293 Q279 283 290 280Z"/>
+  <path fill="url(#hiker)" d="M333 582 Q346 560 366 567 Q392 576 386 598 L330 715 Q319 739 300 737 Q276 734 273 711 Q272 705 276 694Z"/>
+</svg>

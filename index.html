@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A Web GIS research prototype exploring hiking trail risk in Hong Kong through CRITIC-indexed segments, Jenks classes, and proposal-based methodology."
+    />
+    <title>Hiking in Hong Kong: Where Are the Risks?</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.12.1/proj4.min.js"></script>
+    <script src="./amap-config.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="Hiking safely home">
+        <img class="brand-icon" src="./hiking_risk_icon.svg" alt="" />
+        <span>HIKING SAFELY!</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#home">Background</a>
+        <a class="nav-link" href="#study-area">Study Area &amp; Data</a>
+        <a class="nav-link" href="#method">Method</a>
+        <a class="nav-link" href="#analysis">Analysis &amp; Results</a>
+        <a class="nav-link" href="#advice">Advice</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home" class="page-section home-section" aria-labelledby="page-title">
+        <div class="intro">
+          <div>
+            <h1 id="page-title">Hiking in Hong Kong:<br />Where Are the Risks?</h1>
+            <p class="intro-copy">
+              Assess risk level of hiking trail segments in Hong Kong
+            </p>
+          </div>
+          <span id="data-status" class="visually-hidden" role="status">Loading route data…</span>
+        </div>
+        <div class="home-overview">
+          <div class="home-context">
+            <p class="eyebrow">01 / BACKGROUND</p>
+            <h2>Why assess hiking risk by trail segment?</h2>
+            <p class="home-summary">
+              Hong Kong attracts millions of visitors to hike each year, while risks can vary
+              between sections of the same trail. This study asks how to build a scientific
+              indicator system, assess section-level risk, and present results clearly for different users.
+            </p>
+            <div class="background-stats" aria-label="Hiking and accident statistics in Hong Kong">
+              <article class="background-stat">
+                <span class="stat-value">~12M</span>
+                <span class="stat-label">country-park visits per year</span>
+                <span class="stat-note">Approximate average, 2018–2024</span>
+              </article>
+              <article class="background-stat">
+                <span id="accident-average" class="stat-value">770</span>
+                <span class="stat-label">country-park accident cases per year</span>
+                <span class="stat-note accident-average-period">Average, 2020–2024 · 5 complete years</span>
+              </article>
+              <p class="background-source">
+                Sources: proposal (Legislative Council, 2025) and country-park accident table, 2018–2024.
+              </p>
+            </div>
+          </div>
+          <div class="home-carousel" id="home-carousel" aria-label="Hong Kong hiking risk highlights">
+            <div class="carousel-slides">
+              <article class="carousel-slide is-active" data-slide="0" aria-label="1 of 3: Country park accident statistics">
+                <div class="slide-copy">
+                  <span class="card-kicker">COUNTRY PARKS · 2018–2024</span>
+                  <h3>Total Number of Accidents in Country Parks</h3>
+                  <p>Annual accident cases recorded in the supplied statistics table.</p>
+                </div>
+                <div class="accident-chart-card">
+                  <div class="chart-heading">
+                    <span class="chart-unit">ACCIDENT CASES / YEAR</span>
+                    <span class="chart-source">Source: accident statistics spreadsheet</span>
+                  </div>
+                  <svg id="accident-chart" class="accident-chart" viewBox="0 0 640 255" role="img" aria-labelledby="accident-chart-title accident-chart-desc">
+                    <title id="accident-chart-title">Total Number of Accidents in Country Parks</title>
+                    <desc id="accident-chart-desc">Annual case counts from 2018 through 2024.</desc>
+                  </svg>
+                  <p class="chart-footnote">The 2020–2024 average is 770 cases per year. Cases are distinct from people injured or killed.</p>
+                </div>
+              </article>
+
+              <article class="carousel-slide" data-slide="1" aria-label="2 of 3: Official hiking route map example" hidden>
+                <div class="slide-copy">
+                  <span class="card-kicker">OFFICIAL ROUTE INFORMATION</span>
+                  <h3>MacLehose Trail · Section 2</h3>
+                  <p>Official trail-map example with route context and elevation profile.</p>
+                </div>
+                <a
+                  class="carousel-image-link"
+                  href="https://www.hiking.gov.hk/trail/info/id/d0pFSWc1N1dWdkh3aStSajBvUHlmUT09?lang=en-us"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open the official MacLehose Trail Section 2 page"
+                >
+                  <img
+                    src="./Screenshot_MacLehoseTrail(Section2)_ENJOYHIKING.png"
+                    alt="Official trail map for MacLehose Trail Section 2 showing the route and elevation profile"
+                    loading="lazy"
+                  />
+                  <span class="image-link-badge">View official trail page <span aria-hidden="true">↗</span></span>
+                </a>
+              </article>
+
+              <article class="carousel-slide" data-slide="2" aria-label="3 of 3: Hiking accident research report" hidden>
+                <div class="slide-copy">
+                  <span class="card-kicker">HIKING ACCIDENT REPORTING</span>
+                  <h3>Hiking accident cases in 2020-2024</h3>
+                  <p>Research and reporting on hiking incidents involving visitors in Hong Kong.</p>
+                </div>
+                <a
+                  class="carousel-image-link report-image-link"
+                  href="https://liber-research.com/hiking_accidents/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open Liber Research Community's hiking accident report"
+                >
+                  <img
+                    src="./乐极生悲-疫后旅客山野意外激增.png"
+                    alt="News report on the increase in hiking accidents among post-pandemic visitors"
+                    loading="lazy"
+                  />
+                  <span class="image-link-badge">Read the accident report <span aria-hidden="true">↗</span></span>
+                </a>
+              </article>
+            </div>
+            <div class="carousel-pagination" role="group" aria-label="Choose a highlight">
+              <button class="carousel-dot is-active" type="button" aria-label="Show accident statistics" aria-current="true"></button>
+              <button class="carousel-dot" type="button" aria-label="Show official route map"></button>
+              <button class="carousel-dot" type="button" aria-label="Show accident report"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="study-area" class="page-section" aria-labelledby="study-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">02 / STUDY AREA &amp; DATA</p>
+            <h2 id="study-title">A territory-wide trail network and multi-source GIS data</h2>
+          </div>
+          <p class="section-lead">
+            The proposal defines the study area as hiking trails in Hong Kong’s country parks.
+            It combines terrain, habitat, hazard, access and emergency-support data for section-level analysis.
+          </p>
+        </div>
+        <div class="study-metrics">
+          <div><strong>167</strong><span>AFCD hiking trails in the proposal study scope</span></div>
+          <div><strong>25</strong><span>country parks</span></div>
+          <div><strong>22</strong><span>special areas</span></div>
+          <div><strong id="study-segment-count">1,592</strong><span>segments in the current mapped GeoJSON</span></div>
+        </div>
+        <div class="info-grid three-column">
+          <article class="info-card">
+            <span class="card-kicker">TERRAIN &amp; HAZARDS</span>
+            <h3>Physical environment</h3>
+            <p>
+              Digital Terrain Model (raster) supports slope analysis; the Territory-wide Terrestrial
+              Habitat Map supports land-cover classification; boulder points and historical landslide
+              catchments support proximity and overlay analysis.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="card-kicker">ROUTES &amp; ACCESS</span>
+            <h3>Network and nearby facilities</h3>
+            <p>
+              AFCD Hiking Trails in Country Parks define the route network. Road networks, trail distance
+              posts, fire stations, shelters, refreshment kiosks and public water-filling stations support
+              proximity, spacing and accessibility measures.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="card-kicker">CONNECTIVITY &amp; PROVENANCE</span>
+            <h3>Signal data and coordinate handling</h3>
+            <p>
+              The proposal identifies OFCA mobile-coverage maps and CSDI as source channels. The supplied
+              route file uses EPSG:2326 and is transformed in the browser. Dataset-specific download
+              or acquisition dates are not recorded in the proposal or current GeoJSON.
+            </p>
+          </article>
+        </div>
+        <details class="source-inventory" open>
+          <summary>Data layers and proposed processing</summary>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Data layer</th>
+                  <th scope="col">Proposed use in the assessment</th>
+                  <th scope="col">Source named in proposal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Administrative boundaries and base geographic information</td><td>Provide geographic context for the Hong Kong study area and map presentation.</td><td>CSDI</td></tr>
+                <tr><td>Digital Terrain Model (raster)</td><td>Derive slope and average slope for each trail section.</td><td>CSDI</td></tr>
+                <tr><td>Territory-wide Terrestrial Habitat Map (polygon)</td><td>Overlay trail sections to classify land cover.</td><td>CSDI</td></tr>
+                <tr><td>Boulder data (point) &amp; historical landslide catchments</td><td>Count/proximity analysis for boulders; overlay to flag sections affected by historical landslide catchments.</td><td>CSDI</td></tr>
+                <tr><td>Hiking Trails in Country Parks (line)</td><td>Define the study routes and divide them into sections.</td><td>AFCD / government spatial data platform</td></tr>
+                <tr><td>Road network (line)</td><td>Measure distance from each section to the nearest public road.</td><td>CSDI</td></tr>
+                <tr><td>Fire stations, distance posts, shelters, kiosks &amp; water-filling stations (points)</td><td>Assess emergency access, post spacing, shelter proximity and access to supplies.</td><td>CSDI</td></tr>
+                <tr><td>Mobile coverage of country-park trails</td><td>Identify coverage gaps and calculate the share of each section with coverage.</td><td>OFCA digital maps</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+        <div class="data-source-note">
+          <strong>Data currency to document:</strong> record the source publication, acquisition or download date for
+          each layer before interpreting the map as current conditions.
+        </div>
+      </section>
+
+      <section id="method" class="page-section" aria-labelledby="method-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / METHOD</p>
+            <h2 id="method-title">A multi-criteria assessment workflow</h2>
+          </div>
+          <p class="section-lead">
+            The proposal describes a planned workflow that combines expert judgement, indicator data
+            and GIS analysis. The website displays the supplied results; it does not recalculate them.
+          </p>
+        </div>
+        <div class="method-steps">
+          <article class="method-step">
+            <span class="step-number">01</span>
+            <div>
+              <h3>Define indicators and score segments</h3>
+              <p>
+                Review literature to select natural, social and human factors, then use GIS overlay
+                and proximity analysis to derive scores for each trail section.
+              </p>
+            </div>
+          </article>
+          <article class="method-step">
+            <span class="step-number">02</span>
+            <div>
+              <h3>Combine subjective and objective weights</h3>
+              <p>
+                The proposal uses AHP pairwise comparisons for expert-informed weights and plans to
+                introduce entropy weights from data variation as the full dataset becomes available.
+              </p>
+            </div>
+          </article>
+          <article class="method-step">
+            <span class="step-number">03</span>
+            <div>
+              <h3>Map and classify the results</h3>
+              <p>
+                The proposal specifies ArcGIS Pro 3.0.1 for spatial processing, followed by an
+                interactive Web GIS view for hikers and managers.
+              </p>
+            </div>
+          </article>
+        </div>
+        <div class="theory-note">
+          <span class="card-kicker">CONCEPTUAL FRAMEWORK</span>
+          <p>
+            Drawing on accident-system and human-factors perspectives, the proposal treats safety as
+            an interaction among environmental hazards, trail infrastructure, hiker exposure and
+            emergency response. Hikers’ fitness, experience and risk awareness can shape how they
+            respond to similar conditions; this prototype maps segment attributes and does not
+            personalize a score to an individual.
+          </p>
+        </div>
+        <div class="weight-panel">
+          <div class="weight-heading">
+            <div>
+              <span class="card-kicker">PROPOSAL INDICATOR FRAMEWORK</span>
+              <h3>Proposed global weights</h3>
+            </div>
+            <p>Weights below are from the proposal’s preliminary AHP table—not recalculated from the current GeoJSON.</p>
+          </div>
+          <div class="dimension-share" aria-label="Proposed dimension weights">
+            <div class="dimension-share-natural"><span>Natural factors</span><strong>80%</strong></div>
+            <div class="dimension-share-social"><span>Society &amp; human factors</span><strong>20%</strong></div>
+          </div>
+          <div class="weight-chart" aria-label="Proposed global indicator weights">
+            <div class="weight-row"><span>Terrain slope</span><span class="weight-track"><i style="--weight: 24%"></i></span><strong>24%</strong></div>
+            <div class="weight-row"><span>Surface type</span><span class="weight-track"><i style="--weight: 20%"></i></span><strong>20%</strong></div>
+            <div class="weight-row"><span>Cliffs &amp; exposed ridges</span><span class="weight-track"><i style="--weight: 16%"></i></span><strong>16%</strong></div>
+            <div class="weight-row"><span>Accident history</span><span class="weight-track"><i style="--weight: 12%"></i></span><strong>12%</strong></div>
+            <div class="weight-row"><span>Land-cover type</span><span class="weight-track"><i style="--weight: 8%"></i></span><strong>8%</strong></div>
+            <div class="weight-row"><span>Distance to public road</span><span class="weight-track"><i style="--weight: 7%"></i></span><strong>7%</strong></div>
+            <div class="weight-row"><span>Mobile signal coverage</span><span class="weight-track"><i style="--weight: 6%"></i></span><strong>6%</strong></div>
+            <div class="weight-row"><span>Distance from trailhead</span><span class="weight-track"><i style="--weight: 4%"></i></span><strong>4%</strong></div>
+            <div class="weight-row"><span>Supply-point density</span><span class="weight-track"><i style="--weight: 3%"></i></span><strong>3%</strong></div>
+          </div>
+        </div>
+        <aside class="method-caveat">
+          <strong>Method–data alignment:</strong> the proposal describes AHP with a planned entropy-weight
+          adjustment, while the current GeoJSON contains <code>CRITIC_Risk_Index</code> and
+          <code>Jenks_Class_ID</code>. This prototype uses those supplied fields as-is; confirm and document
+          the final weighting formula and classification method before presenting them as the same workflow.
+        </aside>
+      </section>
+
+      <section id="analysis" class="page-section" aria-labelledby="analysis-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 / ANALYSIS &amp; RESULTS</p>
+            <h2 id="analysis-title">Explore the spatial pattern</h2>
+          </div>
+          <div class="analysis-intro">
+            <p class="section-lead">
+              The current dataset assigns the largest share of segments to Moderate, followed by High,
+              Low and Very High classes. Explore their spatial distribution and inspect segment attributes.
+            </p>
+            <a class="dashboard-link" href="#interactive-dashboard">
+              Open Interactive Dashboard <span aria-hidden="true">↓</span>
+            </a>
+          </div>
+        </div>
+        <div class="summary-strip" aria-label="Dataset summary">
+          <article class="summary-item">
+            <span class="summary-label">ASSESSED SEGMENTS</span>
+            <strong id="summary-segments">—</strong>
+          </article>
+          <article class="summary-item">
+            <span class="summary-label">TRAILS REPRESENTED</span>
+            <strong id="summary-trails">—</strong>
+          </article>
+          <article class="summary-item">
+            <span class="summary-label">RISK INDEX &amp; CLASSIFICATION</span>
+            <strong>CRITIC · Jenks</strong>
+          </article>
+          <p class="summary-caption">
+            Risk index and Jenks classes are read from the updated source dataset.
+          </p>
+        </div>
+        <div class="results-grid">
+          <article class="chart-card">
+            <div class="chart-heading">
+              <div>
+                <span class="card-kicker">CURRENT GEOJSON</span>
+                <h3>Segments by Jenks class</h3>
+              </div>
+              <span class="chart-unit">COUNT · SHARE</span>
+            </div>
+            <div id="risk-distribution" class="distribution-chart" aria-label="Trail segment counts by Jenks class">
+              <div class="distribution-row" data-class="1"><span class="distribution-label">Low / 低</span><span class="distribution-track"><i></i></span><strong class="distribution-value">—</strong></div>
+              <div class="distribution-row" data-class="2"><span class="distribution-label">Moderate / 中</span><span class="distribution-track"><i></i></span><strong class="distribution-value">—</strong></div>
+              <div class="distribution-row" data-class="3"><span class="distribution-label">High / 高</span><span class="distribution-track"><i></i></span><strong class="distribution-value">—</strong></div>
+              <div class="distribution-row" data-class="4"><span class="distribution-label">Very High / 很高</span><span class="distribution-track"><i></i></span><strong class="distribution-value">—</strong></div>
+            </div>
+            <p class="chart-footnote">Bars show each class’s share of the 1,592 segments in the updated dataset.</p>
+          </article>
+          <article class="results-note">
+            <span class="card-kicker">READING THE MAP</span>
+            <h3>Class patterns are not live hazard alerts</h3>
+            <p>
+              Jenks groups the supplied index into data-derived classes. A higher class indicates a
+              higher relative index in this assessment, not a real-time measure of weather, closures,
+              or an individual hiker’s personal risk.
+            </p>
+            <a class="dashboard-link" href="#interactive-dashboard">Explore segments on the map <span aria-hidden="true">↓</span></a>
+          </article>
+        </div>
+      </section>
+
+      <section id="interactive-dashboard" class="page-section dashboard-section" aria-labelledby="dashboard-title">
+        <div class="section-heading dashboard-heading">
+          <div>
+            <p class="eyebrow">INTERACTIVE DASHBOARD</p>
+            <h2 id="dashboard-title">Trail Risk Visual Platform</h2>
+          </div>
+          <p class="section-lead">
+            Search routes, filter assessed risk, and select any segment to inspect its attributes.
+          </p>
+        </div>
+
+      <section class="dashboard" aria-label="Interactive trail risk dashboard">
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">01 / PARAMETERS</p>
+              <h2>Find a trail</h2>
+            </div>
+            <span class="panel-index">01</span>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="trail-search">Trail name · English / 繁體中文</label>
+            <div class="route-search-group">
+              <input
+                id="trail-search"
+                type="search"
+                autocomplete="off"
+                placeholder="Search trail name"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="trail-search-results"
+                aria-expanded="false"
+              />
+              <div id="trail-search-results" class="trail-search-results" role="listbox" aria-label="Matching trails" hidden></div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="trail-select">Select a route</label>
+            <select id="trail-select">
+              <option value="">All assessed trails</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="class-select">Risk rating</label>
+            <select id="class-select">
+              <option value="">All risk classes</option>
+              <option value="1">Low / 低</option>
+              <option value="2">Moderate / 中</option>
+              <option value="3">High / 高</option>
+              <option value="4">Very High / 很高</option>
+            </select>
+          </div>
+
+          <div class="control-group threshold-control">
+            <label class="control-label" for="risk-threshold">
+              Maximum CRITIC index <output id="risk-threshold-value" for="risk-threshold">1.00</output>
+            </label>
+            <input id="risk-threshold" type="range" min="0" max="1" step="0.01" value="1" />
+            <div class="range-hints"><span>0.00</span><span>1.00</span></div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Visible layers</span>
+            <label class="layer-toggle">
+              <input id="routes-toggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span>
+                <span class="layer-name">Assessed segments</span>
+                <span class="layer-description">Colored by supplied Jenks class</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="legend-section">
+            <div class="legend-title-row">
+              <span class="control-label">Jenks risk class</span>
+              <span class="legend-unit">CRITIC INDEX</span>
+            </div>
+            <p class="legend-note">Natural breaks from the updated dataset</p>
+            <div id="legend" class="legend-list" aria-live="polite">
+              <div class="legend-placeholder">Preparing legend…</div>
+            </div>
+          </div>
+          <div class="panel-footnote">
+            <span class="footnote-mark">i</span>
+            <p>
+              Classes and index are from the supplied assessment, not live conditions or official safety ratings.
+            </p>
+          </div>
+        </aside>
+
+        <div class="dashboard-right">
+          <div class="dashboard-top">
+            <aside class="detail-panel" aria-live="polite" aria-labelledby="detail-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">02 / SEGMENT &amp; TRAIL</p>
+                  <h2 id="detail-title">Selected details</h2>
+                </div>
+                <span class="panel-index">02</span>
+              </div>
+              <div id="detail-content" class="detail-content">
+                <p class="detail-empty">Select a colored segment on the map, or choose a route to see its information.</p>
+              </div>
+            </aside>
+            <div class="map-toolbar">
+              <div class="map-location">
+                <span class="location-mark" aria-hidden="true"></span>
+                <span>03 / MAP · HONG KONG SAR</span>
+                <span class="toolbar-separator">·</span>
+                <span id="segment-count">Loading segments</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-column">
+            <div id="map" class="map-view" aria-label="Map of assessed hiking trail segments"></div>
+            <div class="map-controls" aria-label="Map controls">
+              <label class="map-control-select">
+                <span class="visually-hidden">Basemap</span>
+                <select id="basemap-select" aria-label="Basemap">
+                  <option value="standard">Standard map</option>
+                  <option value="satellite" selected>Satellite imagery</option>
+                </select>
+              </label>
+              <label class="map-road-toggle">
+                <input id="roadnet-toggle" type="checkbox" checked />
+                <span class="toggle-track" aria-hidden="true"></span>
+                <span>Road network</span>
+              </label>
+              <button id="home-button" class="home-button" type="button" title="Zoom to all trails">
+                <span aria-hidden="true">⌂</span> Full extent
+              </button>
+            </div>
+            <div id="map-message" class="map-message" role="status">Loading AMap and route data…</div>
+          </div>
+        </div>
+      </section>
+      </section>
+
+      <section id="advice" class="page-section advice-section" aria-labelledby="advice-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">05 / ADVICE</p>
+            <h2 id="advice-title">Use risk classes to guide decisions</h2>
+          </div>
+          <p class="section-lead">
+            Map classes are planning information, not a live safety assessment. Always check
+            official alerts, weather and current trail conditions before setting out.
+          </p>
+        </div>
+        <div class="advice-grid">
+          <article class="advice-card advice-low">
+            <span class="advice-class">LOW · 低</span>
+            <h3>Prepare as usual</h3>
+            <p>Check the forecast, carry water and a charged phone, and share your itinerary.</p>
+          </article>
+          <article class="advice-card advice-moderate">
+            <span class="advice-class">MODERATE · 中</span>
+            <h3>Allow extra time</h3>
+            <p>Use suitable footwear, plan rest points and keep to marked trails.</p>
+          </article>
+          <article class="advice-card advice-high">
+            <span class="advice-class">HIGH · 高</span>
+            <h3>Review conditions carefully</h3>
+            <p>Consider your group’s ability, avoid deteriorating conditions and be ready to turn back.</p>
+          </article>
+          <article class="advice-card advice-very-high">
+            <span class="advice-class">VERY HIGH · 很高</span>
+            <h3>Consider an alternative</h3>
+            <p>Check for closures and official warnings; defer or change plans if conditions or preparation are unsuitable.</p>
+          </article>
+        </div>
+        <div class="management-note">
+          <span class="card-kicker">FOR TRAIL MANAGERS</span>
+          <p>
+            Use higher-class segments to prioritize field inspection, maintenance review,
+            wayfinding and communication coverage checks. Confirm findings on site before
+            making operational or closure decisions.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>HIKING IN HONG KONG: WHERE ARE THE RISKS?</span>
+      <span>Research prototype · Data source: updated CRITIC/Jenks GeoJSON</span>
+    </footer>
+  </body>
+</html>
