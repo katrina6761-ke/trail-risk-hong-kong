@@ -302,7 +302,6 @@
       <section id="analysis" class="page-section" aria-labelledby="analysis-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">04 / ANALYSIS &amp; RESULTS</p>
             <h2 id="analysis-title">Explore the spatial pattern</h2>
           </div>
           <div class="analysis-intro">
@@ -365,46 +364,35 @@
       <section id="interactive-dashboard" class="page-section dashboard-section" aria-labelledby="dashboard-title">
         <div class="section-heading dashboard-heading">
           <div>
-            <p class="eyebrow">INTERACTIVE DASHBOARD</p>
             <h2 id="dashboard-title">Trail Risk Visual Platform</h2>
           </div>
-          <p class="section-lead">
-            Search routes, filter assessed risk, and select any segment to inspect its attributes.
-          </p>
         </div>
 
       <section class="dashboard" aria-label="Interactive trail risk dashboard">
         <aside class="control-panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">01 / PARAMETERS</p>
               <h2>Find a trail</h2>
             </div>
-            <span class="panel-index">01</span>
           </div>
 
           <div class="control-group">
-            <label class="control-label" for="trail-search">Trail name · English / 繁體中文</label>
+            <label class="control-label" for="trail-search">Trail · search or browse by region</label>
             <div class="route-search-group">
               <input
                 id="trail-search"
                 type="search"
                 autocomplete="off"
-                placeholder="Search trail name"
+                placeholder="English or 繁體中文"
                 role="combobox"
                 aria-autocomplete="list"
                 aria-controls="trail-search-results"
                 aria-expanded="false"
+                aria-haspopup="listbox"
               />
-              <div id="trail-search-results" class="trail-search-results" role="listbox" aria-label="Matching trails" hidden></div>
+              <div id="trail-search-results" class="trail-search-results" role="listbox" aria-label="Trails grouped by hiking region" hidden></div>
             </div>
-          </div>
-
-          <div class="control-group">
-            <label class="control-label" for="trail-select">Select a route</label>
-            <select id="trail-select">
-              <option value="">All assessed trails</option>
-            </select>
+            <p class="trail-region-note">Regions follow the supplied trail dataset, not administrative districts.</p>
           </div>
 
           <div class="control-group">
@@ -439,20 +427,9 @@
           </div>
 
           <div class="legend-section">
-            <div class="legend-title-row">
-              <span class="control-label">Jenks risk class</span>
-              <span class="legend-unit">CRITIC INDEX</span>
-            </div>
-            <p class="legend-note">Natural breaks from the updated dataset</p>
             <div id="legend" class="legend-list" aria-live="polite">
               <div class="legend-placeholder">Preparing legend…</div>
             </div>
-          </div>
-          <div class="panel-footnote">
-            <span class="footnote-mark">i</span>
-            <p>
-              Classes and index are from the supplied assessment, not live conditions or official safety ratings.
-            </p>
           </div>
         </aside>
 
@@ -461,43 +438,55 @@
             <aside class="detail-panel" aria-live="polite" aria-labelledby="detail-title">
               <div class="panel-heading">
                 <div>
-                  <p class="eyebrow">02 / SEGMENT &amp; TRAIL</p>
                   <h2 id="detail-title">Selected details</h2>
                 </div>
-                <span class="panel-index">02</span>
+                <span id="segment-count" class="segment-count">Loading segments</span>
               </div>
               <div id="detail-content" class="detail-content">
                 <p class="detail-empty">Select a colored segment on the map, or choose a route to see its information.</p>
               </div>
             </aside>
-            <div class="map-toolbar">
-              <div class="map-location">
-                <span class="location-mark" aria-hidden="true"></span>
-                <span>03 / MAP · HONG KONG SAR</span>
-                <span class="toolbar-separator">·</span>
-                <span id="segment-count">Loading segments</span>
-              </div>
-            </div>
           </div>
 
           <div class="map-column">
             <div id="map" class="map-view" aria-label="Map of assessed hiking trail segments"></div>
-            <div class="map-controls" aria-label="Map controls">
-              <label class="map-control-select">
-                <span class="visually-hidden">Basemap</span>
-                <select id="basemap-select" aria-label="Basemap">
-                  <option value="standard">Standard map</option>
-                  <option value="satellite" selected>Satellite imagery</option>
-                </select>
-              </label>
-              <label class="map-road-toggle">
-                <input id="roadnet-toggle" type="checkbox" checked />
-                <span class="toggle-track" aria-hidden="true"></span>
-                <span>Road network</span>
-              </label>
-              <button id="home-button" class="home-button" type="button" title="Zoom to all trails">
-                <span aria-hidden="true">⌂</span> Full extent
+            <div id="map-layer-control" class="map-layer-control" aria-label="Map layers">
+              <button
+                id="map-layer-collapse"
+                class="map-layer-collapse"
+                type="button"
+                aria-label="Collapse map layer controls"
+                aria-expanded="true"
+                title="Collapse map layer controls"
+              >
+                <span aria-hidden="true">›</span>
               </button>
+              <div class="map-layer-options">
+                <div class="map-layer-buttons" role="group" aria-label="Choose a map layer">
+                  <button class="map-layer-button" type="button" data-basemap="standard" aria-pressed="false">
+                    <span class="map-layer-preview preview-standard" aria-hidden="true"></span>
+                    <span>Standard</span>
+                  </button>
+                  <button class="map-layer-button" type="button" data-basemap="satellite" aria-pressed="true">
+                    <span class="map-layer-preview preview-satellite" aria-hidden="true"></span>
+                    <span>Satellite</span>
+                  </button>
+                  <button id="traffic-toggle" class="map-layer-button" type="button" aria-pressed="false" aria-label="Toggle road traffic">
+                    <span class="map-layer-preview preview-traffic" aria-hidden="true"></span>
+                    <span>Road traffic</span>
+                  </button>
+                </div>
+                <div class="map-layer-utilities">
+                  <label class="map-road-toggle">
+                    <input id="roadnet-toggle" type="checkbox" checked />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span>Road network</span>
+                  </label>
+                  <button id="home-button" class="home-button" type="button" title="Zoom to all trails">
+                    <span aria-hidden="true">⌂</span> Full extent
+                  </button>
+                </div>
+              </div>
             </div>
             <div id="map-message" class="map-message" role="status">Loading AMap and route data…</div>
           </div>

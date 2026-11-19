@@ -11,11 +11,13 @@ A static Web GIS prototype for exploring the CRITIC risk index and supplied Jenk
 - Linked official MacLehose Trail example and supplied hiking-accident news image.
 - Proposal-based research background, questions, study area, data-source summary, methodology, and preliminary AHP weight chart.
 - Dataset-driven chart of trail segment counts and shares in each Jenks class.
-- AMap standard and satellite basemaps with map-window controls and an independent road-network toggle.
+- AMap standard and satellite basemaps, optional live traffic and road-network overlays, and a collapsible map-layer control.
 - `Risk_assess_result_CRITIC_Jenks_name.geojson` route segments drawn and colored by `Jenks_Class_ID`.
-- English and Traditional Chinese route search, route selection and zoom, Jenks class filter, and maximum CRITIC-index threshold.
+- Single English/Traditional Chinese trail search with hierarchical region browsing, section disambiguation, route selection and zoom, Jenks class filter, and maximum CRITIC-index threshold.
+- Selected trail and segment details are arranged in horizontal information cards without an internal vertical scrollbar.
 - Click a segment to inspect its risk rating, factor scores, route metadata, and official hiking.gov.hk trail link.
 - Screenshot-matched dashboard layout: full-height filter sidebar, a compact upper details/toolbar band, and a large map beneath it.
+- Enlarged dashboard typography and a full-width selected-details panel above the map.
 - Browser-side conversion from Hong Kong 1980 Grid System (EPSG:2326) to WGS 84 and then GCJ-02 for AMap.
 
 The map uses the Jenks class ID and CRITIC risk index supplied in the updated GeoJSON; it does not recalculate either. Legend ranges show the minimum and maximum observed CRITIC index in each class. These classes are research classifications, not official safety ratings or real-time trail conditions.

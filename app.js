@@ -37,18 +37,24 @@
   const mapMessageElement = document.getElementById("map-message");
   const legendElement = document.getElementById("legend");
   const routeSearch = document.getElementById("trail-search");
-  const routeSelect = document.getElementById("trail-select");
   const classSelect = document.getElementById("class-select");
   const thresholdInput = document.getElementById("risk-threshold");
   const thresholdValue = document.getElementById("risk-threshold-value");
   const routesToggle = document.getElementById("routes-toggle");
-  const basemapSelect = document.getElementById("basemap-select");
   const roadNetToggle = document.getElementById("roadnet-toggle");
+  const trafficToggle = document.getElementById("traffic-toggle");
+  const mapLayerControl = document.getElementById("map-layer-control");
+  const mapLayerCollapse = document.getElementById("map-layer-collapse");
+  const mapLayerButtons = Array.from(document.querySelectorAll(".map-layer-button[data-basemap]"));
   const detailContent = document.getElementById("detail-content");
   const searchResults = document.getElementById("trail-search-results");
 
   let AMapApi;
   let map;
+  let selectedBasemap = "satellite";
+  let trafficLayer;
+  let selectedTrailId = "";
+  let searchRegionKey = "";
   let segmentRecords = [];
   let trailGroups = new Map();
   let mapMessageTimer;
@@ -99,8 +105,20 @@
             renderSegmentDetails(record);
           }
         });
-        basemapSelect.addEventListener("change", updateBaseLayers);
+        mapLayerButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            selectedBasemap = button.dataset.basemap;
+            updateBaseLayers();
+          });
+        });
         roadNetToggle.addEventListener("change", updateBaseLayers);
+        trafficToggle.addEventListener("click", function () {
+          trafficToggle.setAttribute(
+            "aria-pressed",
+            trafficToggle.getAttribute("aria-pressed") !== "true" ? "true" : "false"
+          );
+          updateBaseLayers();
+        });
         renderSegmentsOnMap();
         updateBaseLayers();
         window.requestAnimationFrame(function () {
@@ -167,54 +185,35 @@
   function setupDashboardControls() {
     routeSearch.addEventListener("input", function () {
       renderSearchResults(routeSearch.value);
-      if (routeSelect.value) {
-        const selected = trailGroups.get(routeSelect.value);
-        if (selected && !groupMatchesQuery(selected, routeSearch.value)) {
-          routeSelect.value = "";
-          populateTrailOptions();
-          applyFilters();
-          renderDefaultDetails();
-        }
+      if (selectedTrailId) {
+        selectedTrailId = "";
+        applyFilters();
+        renderDefaultDetails();
       }
     });
     routeSearch.addEventListener("keydown", function (event) {
       if (event.key === "Escape") {
         hideSearchResults();
-      } else if (event.key === "ArrowDown") {
-        const firstResult = searchResults.querySelector("button");
-        if (firstResult) {
-          event.preventDefault();
-          firstResult.focus();
-        }
-      } else if (event.key === "Enter") {
-        const firstResult = searchResults.querySelector("button");
-        if (firstResult) {
-          event.preventDefault();
-          firstResult.click();
-        }
+        return;
+      }
+      const hasScopedResults = Boolean(routeSearch.value.trim() || searchRegionKey);
+      const firstResult = hasScopedResults
+        ? searchResults.querySelector(".trail-search-result")
+        : searchResults.querySelector(".trail-search-all");
+      if (event.key === "ArrowDown" && firstResult) {
+        event.preventDefault();
+        firstResult.focus();
+      } else if (event.key === "Enter" && firstResult) {
+        event.preventDefault();
+        firstResult.click();
       }
     });
     routeSearch.addEventListener("focus", function () {
-      if (routeSearch.value.trim()) {
-        renderSearchResults(routeSearch.value);
-      }
+      renderSearchResults(routeSearch.value);
     });
     document.addEventListener("click", function (event) {
       if (!event.target.closest(".route-search-group")) {
         hideSearchResults();
-      }
-    });
-    routeSelect.addEventListener("change", function () {
-      const trailId = routeSelect.value;
-      applyFilters();
-      if (trailId) {
-        const group = trailGroups.get(trailId);
-        if (group) {
-          renderTrailDetails(group);
-          zoomToRecords(group.records, 16);
-        }
-      } else {
-        renderDefaultDetails();
       }
     });
     classSelect.addEventListener("change", applyFilters);
@@ -224,6 +223,16 @@
       applyFilters();
     });
     routesToggle.addEventListener("change", applyFilters);
+    mapLayerCollapse.addEventListener("click", function () {
+      const collapsed = mapLayerControl.classList.toggle("is-collapsed");
+      mapLayerCollapse.setAttribute("aria-expanded", String(!collapsed));
+      mapLayerCollapse.setAttribute(
+        "aria-label",
+        collapsed ? "Expand map layer controls" : "Collapse map layer controls"
+      );
+      mapLayerCollapse.title = collapsed ? "Expand map layer controls" : "Collapse map layer controls";
+      mapLayerCollapse.querySelector("span").textContent = collapsed ? "‹" : "›";
+    });
     document.getElementById("home-button").addEventListener("click", function () {
       zoomToRecords(segmentRecords, 12);
     });
@@ -233,7 +242,13 @@
     const normalizedQuery = query.trim().normalize("NFKC").toLocaleLowerCase();
     return (
       !normalizedQuery ||
-      [group.properties.TRAIL_NAME_EN, group.properties.TRAIL_NAME_TC, group.id]
+      [
+        group.properties.TRAIL_NAME_EN,
+        group.properties.TRAIL_NAME_TC,
+        group.properties.REGION_EN,
+        group.properties.REGION_TC,
+        group.id
+      ]
         .filter(Boolean)
         .some(function (value) {
           return String(value).normalize("NFKC").toLocaleLowerCase().includes(normalizedQuery);
@@ -244,59 +259,217 @@
   function renderSearchResults(query) {
     searchResults.replaceChildren();
     const normalizedQuery = query.trim();
-    if (!normalizedQuery) {
-      hideSearchResults();
-      return;
-    }
-    const matches = Array.from(trailGroups.values())
+    const allGroups = Array.from(trailGroups.values());
+    const matches = allGroups
       .filter(function (group) {
         return groupMatchesQuery(group, normalizedQuery);
       })
       .sort(function (left, right) {
-        return String(left.properties.TRAIL_NAME_EN || left.id).localeCompare(
+        const regionOrder = String(left.properties.REGION_EN || "Other").localeCompare(
+          String(right.properties.REGION_EN || "Other")
+        );
+        return regionOrder || String(left.properties.TRAIL_NAME_EN || left.id).localeCompare(
           String(right.properties.TRAIL_NAME_EN || right.id)
         );
       });
 
-    if (matches.length === 0) {
-      const empty = document.createElement("p");
-      empty.className = "search-no-results";
-      empty.textContent = "No matching trails. Try an English or Traditional Chinese name.";
-      searchResults.append(empty);
-    } else {
-      matches.slice(0, 8).forEach(function (group) {
-        const button = document.createElement("button");
-        button.className = "trail-search-result";
-        button.type = "button";
-        button.setAttribute("role", "option");
-        const english = document.createElement("span");
-        english.className = "search-result-en";
-        english.textContent = group.properties.TRAIL_NAME_EN || group.id;
-        const chinese = document.createElement("span");
-        chinese.className = "search-result-cn";
-        chinese.textContent = group.properties.TRAIL_NAME_TC || group.id;
-        button.append(english, chinese);
-        button.addEventListener("click", function () {
-          selectTrail(group);
-        });
-        searchResults.append(button);
-      });
-      if (matches.length > 8) {
-        const more = document.createElement("p");
-        more.className = "search-more-results";
-        more.textContent = "Showing 8 of " + matches.length + " matches. Refine your search.";
-        searchResults.append(more);
+    if (normalizedQuery) {
+      appendAllTrailsOption();
+      if (matches.length) {
+        appendTrailGroups(matches);
+      } else {
+        appendNoSearchResults();
       }
+    } else if (searchRegionKey) {
+      const regionGroups = allGroups.filter(function (group) {
+        return (group.properties.REGION_EN || group.properties.REGION_TC || "Other regions") === searchRegionKey;
+      });
+      appendRegionBackButton(regionGroups[0]);
+      if (regionGroups.length) {
+        regionGroups.sort(function (left, right) {
+          return String(left.properties.TRAIL_NAME_EN || left.id).localeCompare(
+            String(right.properties.TRAIL_NAME_EN || right.id)
+          );
+        });
+        appendTrailGroups(regionGroups, false);
+      } else {
+        appendNoSearchResults();
+      }
+    } else {
+      appendAllTrailsOption();
+      appendRegionOptions(allGroups);
     }
+
     searchResults.hidden = false;
     routeSearch.setAttribute("aria-expanded", "true");
   }
 
+  function appendAllTrailsOption() {
+    const allTrails = document.createElement("button");
+    allTrails.className = "trail-search-all";
+    allTrails.type = "button";
+    allTrails.setAttribute("role", "option");
+    allTrails.setAttribute("aria-selected", String(!selectedTrailId));
+    allTrails.textContent = "All assessed trails";
+    allTrails.addEventListener("click", function () {
+      searchRegionKey = "";
+      selectTrail(null);
+    });
+    searchResults.append(allTrails);
+  }
+
+  function appendRegionOptions(groups) {
+    const regions = new Map();
+    groups.forEach(function (group) {
+      const properties = group.properties;
+      const key = properties.REGION_EN || properties.REGION_TC || "Other regions";
+      if (!regions.has(key)) {
+        regions.set(key, {
+          label: localizedValue(properties.REGION_EN, properties.REGION_TC) || "Other regions",
+          trails: []
+        });
+      }
+      regions.get(key).trails.push(group);
+    });
+
+    Array.from(regions.entries())
+      .sort(function (left, right) {
+        return left[0].localeCompare(right[0]);
+      })
+      .forEach(function (entry) {
+        const key = entry[0];
+        const region = entry[1];
+        const button = document.createElement("button");
+        button.className = "trail-search-region-option";
+        button.type = "button";
+        button.setAttribute("role", "option");
+        button.setAttribute("aria-label", region.label + ", " + region.trails.length + " trails");
+        const label = document.createElement("span");
+        label.className = "trail-search-region-name";
+        label.textContent = region.label;
+        const count = document.createElement("span");
+        count.className = "trail-search-region-count";
+        count.textContent = region.trails.length + " trails";
+        button.append(label, count);
+        button.addEventListener("click", function (event) {
+          event.stopPropagation();
+          searchRegionKey = key;
+          renderSearchResults("");
+        });
+        searchResults.append(button);
+      });
+  }
+
+  function appendRegionBackButton(group) {
+    const back = document.createElement("button");
+    back.className = "trail-search-region-back";
+    back.type = "button";
+    back.textContent = "‹ All regions";
+    back.addEventListener("click", function (event) {
+      event.stopPropagation();
+      searchRegionKey = "";
+      renderSearchResults("");
+    });
+    searchResults.append(back);
+    if (group) {
+      const heading = document.createElement("span");
+      heading.className = "trail-search-region-heading";
+      heading.textContent = localizedValue(group.properties.REGION_EN, group.properties.REGION_TC);
+      searchResults.append(heading);
+    }
+  }
+
+  function appendTrailGroups(groups, includeRegionHeadings) {
+    if (includeRegionHeadings === undefined) {
+      includeRegionHeadings = true;
+    }
+    const groupsByRegion = new Map();
+    groups.forEach(function (group) {
+      const properties = group.properties;
+      const regionKey = properties.REGION_EN || properties.REGION_TC || "Other regions";
+      if (!groupsByRegion.has(regionKey)) {
+        groupsByRegion.set(regionKey, {
+          label: localizedValue(properties.REGION_EN, properties.REGION_TC) || "Other regions",
+          trails: []
+        });
+      }
+      groupsByRegion.get(regionKey).trails.push(group);
+    });
+
+    groupsByRegion.forEach(function (region) {
+      let container = searchResults;
+      if (includeRegionHeadings) {
+        container = document.createElement("div");
+        container.className = "trail-search-region";
+        container.setAttribute("role", "group");
+        container.setAttribute("aria-label", region.label);
+        const heading = document.createElement("span");
+        heading.className = "trail-search-region-heading";
+        heading.textContent = region.label;
+        container.append(heading);
+      }
+      region.trails.forEach(function (group) {
+        appendTrailResult(group, container);
+      });
+      if (container !== searchResults) {
+        searchResults.append(container);
+      }
+    });
+  }
+
+  function appendTrailResult(group, container) {
+    const button = document.createElement("button");
+    button.className = "trail-search-result";
+    button.type = "button";
+    button.setAttribute("role", "option");
+    button.setAttribute("aria-selected", String(group.id === selectedTrailId));
+    const english = document.createElement("span");
+    english.className = "search-result-en";
+    english.textContent = group.properties.TRAIL_NAME_EN || group.id;
+    const chinese = document.createElement("span");
+    chinese.className = "search-result-cn";
+    chinese.textContent = group.properties.TRAIL_NAME_TC || group.id;
+    button.append(english, chinese);
+    const sectionNumber = Number(group.properties.SECTION_NO);
+    if (Number.isInteger(sectionNumber) && sectionNumber > 0) {
+      const endpoints = [
+        group.properties.STARTpt_EN,
+        group.properties.FINISHpt_EN
+      ].filter(Boolean);
+      const section = document.createElement("span");
+      section.className = "search-result-meta";
+      section.textContent =
+        "Section " + sectionNumber + (endpoints.length ? " · " + endpoints.join(" → ") : "");
+      button.append(section);
+    }
+    button.addEventListener("click", function () {
+      searchRegionKey = "";
+      selectTrail(group);
+    });
+    container.append(button);
+  }
+
+  function appendNoSearchResults() {
+    const empty = document.createElement("p");
+    empty.className = "search-no-results";
+    empty.textContent = "No matching trails. Try an English or Traditional Chinese name.";
+    searchResults.append(empty);
+  }
+
   function selectTrail(group) {
     hideSearchResults();
-    routeSearch.value = group.properties.TRAIL_NAME_EN || group.properties.TRAIL_NAME_TC || group.id;
-    routeSelect.value = group.id;
-    routeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    selectedTrailId = group ? group.id : "";
+    routeSearch.value = group
+      ? group.properties.TRAIL_NAME_EN || group.properties.TRAIL_NAME_TC || group.id
+      : "";
+    applyFilters();
+    if (group) {
+      renderTrailDetails(group);
+      zoomToRecords(group.records, 16);
+    } else {
+      renderDefaultDetails();
+      zoomToRecords(segmentRecords, 12);
+    }
   }
 
   function hideSearchResults() {
@@ -309,16 +482,25 @@
       showMapMessage("The map is not ready yet.", true);
       return;
     }
-    let layers;
-    if (basemapSelect.value === "satellite") {
-      layers = [new AMapApi.TileLayer.Satellite()];
-    } else {
-      layers = [new AMapApi.TileLayer()];
-    }
+    const layers =
+      selectedBasemap === "satellite"
+        ? [new AMapApi.TileLayer.Satellite()]
+        : [new AMapApi.TileLayer()];
     if (roadNetToggle.checked) {
       layers.push(new AMapApi.TileLayer.RoadNet());
     }
     map.setLayers(layers);
+    mapLayerButtons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.basemap === selectedBasemap));
+    });
+    const trafficEnabled = trafficToggle.getAttribute("aria-pressed") === "true";
+    if (trafficEnabled && !trafficLayer) {
+      trafficLayer = new AMapApi.TileLayer.Traffic({ autoRefresh: true, interval: 180 });
+      map.add(trafficLayer);
+    } else if (!trafficEnabled && trafficLayer) {
+      map.remove(trafficLayer);
+      trafficLayer = null;
+    }
     window.requestAnimationFrame(function () {
       map.resize();
     });
@@ -376,7 +558,6 @@
       }
       updateLegend(segmentRecords);
       updateSummary(segmentRecords);
-      populateTrailOptions();
       statusElement.textContent = "Route data loaded";
       renderSegmentsOnMap();
       applyFilters();
@@ -449,34 +630,8 @@
     zoomToRecords(segmentRecords, 12);
   }
 
-  function populateTrailOptions() {
-    const previousValue = routeSelect.value;
-    const optionItems = Array.from(trailGroups.values())
-      .sort(function (left, right) {
-        return String(left.properties.TRAIL_NAME_EN || left.id).localeCompare(
-          String(right.properties.TRAIL_NAME_EN || right.id)
-        );
-      });
-    routeSelect.replaceChildren(new Option("All assessed trails", ""));
-    optionItems.forEach(function (group) {
-      const properties = group.properties;
-      const englishName = properties.TRAIL_NAME_EN || group.id;
-      const chineseName = properties.TRAIL_NAME_TC || "";
-      const option = new Option(
-        englishName + (chineseName ? " · " + chineseName : "") + " (" + group.id + ")",
-        group.id
-      );
-      routeSelect.append(option);
-    });
-    if (previousValue && optionItems.some(function (group) { return group.id === previousValue; })) {
-      routeSelect.value = previousValue;
-    } else {
-      routeSelect.value = "";
-    }
-  }
-
   function applyFilters() {
-    const selectedTrail = routeSelect.value;
+    const selectedTrail = selectedTrailId;
     const selectedClass = classSelect.value ? Number(classSelect.value) : null;
     const maxRisk = Number(thresholdInput.value);
     let matchingCount = 0;
@@ -607,6 +762,7 @@
   }
 
   function renderDefaultDetails() {
+    detailContent.classList.remove("has-details");
     detailContent.replaceChildren();
     const message = document.createElement("p");
     message.className = "detail-empty";
@@ -616,43 +772,69 @@
 
   function renderTrailDetails(group) {
     const properties = group.properties;
+    detailContent.classList.add("has-details");
     detailContent.replaceChildren();
-    const name = addDetailElement("h3", "detail-trail-name", properties.TRAIL_NAME_EN || group.id);
-    detailContent.append(name);
+    const overview = createDetailCard("Trail");
+    overview.classList.add("detail-overview");
+    overview.append(addDetailElement("h3", "detail-trail-name", properties.TRAIL_NAME_EN || group.id));
     if (properties.TRAIL_NAME_TC) {
-      detailContent.append(addDetailElement("p", "detail-trail-name-cn", properties.TRAIL_NAME_TC));
+      overview.append(addDetailElement("p", "detail-trail-name-cn", properties.TRAIL_NAME_TC));
     }
     const count = addDetailElement("p", "detail-trail-count", group.records.length + " assessed segments");
-    detailContent.append(count);
-    appendTrailMetadata(properties);
-    appendOfficialLink(properties);
+    overview.append(count);
+
+    const trailInfo = createDetailCard("Trail information");
+    appendTrailMetadata(properties, trailInfo);
+    const officialLink = createOfficialLink(properties);
+    if (officialLink) {
+      trailInfo.append(officialLink);
+    }
+    detailContent.append(overview, trailInfo);
   }
 
   function renderSegmentDetails(record) {
     const properties = record.properties;
+    detailContent.classList.add("has-details");
     detailContent.replaceChildren();
-    const name = addDetailElement("h3", "detail-trail-name", properties.TRAIL_NAME_EN || record.trailId);
-    detailContent.append(name);
+    const overview = createDetailCard("Trail & risk");
+    overview.classList.add("detail-overview");
+    overview.append(addDetailElement("h3", "detail-trail-name", properties.TRAIL_NAME_EN || record.trailId));
     if (properties.TRAIL_NAME_TC) {
-      detailContent.append(addDetailElement("p", "detail-trail-name-cn", properties.TRAIL_NAME_TC));
+      overview.append(addDetailElement("p", "detail-trail-name-cn", properties.TRAIL_NAME_TC));
     }
     const badge = addDetailElement("span", "detail-risk-badge", properties[CLASS_LABEL_FIELD] || record.classInfo.label);
     badge.style.setProperty("--class-color", record.classInfo.color);
-    detailContent.append(badge);
+    overview.append(badge);
+
+    const metricsCard = createDetailCard("Selected segment");
     const metrics = document.createElement("dl");
     metrics.className = "detail-metrics";
     addDefinition(metrics, "Segment", properties[SEGMENT_FIELD] || properties.SEG_NO);
     addDefinition(metrics, "CRITIC index", formatScore(record.risk));
     addDefinition(metrics, "Segment length", formatDistance(properties.LENGTH_M));
-    detailContent.append(metrics);
-    appendFactorList(properties);
-    appendTrailMetadata(properties);
-    appendOfficialLink(properties);
+    metricsCard.append(metrics);
+
+    const factorsCard = createDetailCard("Risk factor scores");
+    appendFactorList(properties, factorsCard);
+
+    const trailInfo = createDetailCard("Trail information");
+    appendTrailMetadata(properties, trailInfo);
+    const officialLink = createOfficialLink(properties);
+    if (officialLink) {
+      trailInfo.append(officialLink);
+    }
+
+    detailContent.append(overview, metricsCard, factorsCard, trailInfo);
   }
 
-  function appendFactorList(properties) {
-    const heading = addDetailElement("h4", "detail-subheading", "Risk factor scores");
-    detailContent.append(heading);
+  function createDetailCard(title) {
+    const card = document.createElement("section");
+    card.className = "detail-card";
+    card.append(addDetailElement("h4", "detail-subheading", title));
+    return card;
+  }
+
+  function appendFactorList(properties, container) {
     const list = document.createElement("dl");
     list.className = "factor-list";
     FACTORS.forEach(function (factor) {
@@ -663,15 +845,17 @@
         addDefinition(list, factor.label, formatScore(properties[field]));
       }
     });
-    detailContent.append(list);
+    container.append(list);
   }
 
-  function appendTrailMetadata(properties) {
-    const heading = addDetailElement("h4", "detail-subheading", "Trail information");
-    detailContent.append(heading);
+  function appendTrailMetadata(properties, container) {
     const metadata = document.createElement("dl");
     metadata.className = "detail-metadata";
     addDefinition(metadata, "Route type", localizedValue(properties.TYPE_EN, properties.TYPE_TC));
+    const sectionNumber = Number(properties.SECTION_NO);
+    if (Number.isInteger(sectionNumber) && sectionNumber > 0) {
+      addDefinition(metadata, "Trail section", "Section " + sectionNumber);
+    }
     addDefinition(metadata, "Difficulty", localizedValue(properties.DIFFICULTY_EN, properties.DIFFICULTY_TC));
     addDefinition(metadata, "Region", localizedValue(properties.REGION_EN, properties.REGION_TC));
     addDefinition(
@@ -681,22 +865,22 @@
         " → " +
         localizedValue(properties.FINISHpt_EN, properties.FINISHpt_TC)
     );
-    detailContent.append(metadata);
+    container.append(metadata);
   }
 
-  function appendOfficialLink(properties) {
+  function createOfficialLink(properties) {
     if (!properties.WEBSITE) {
-      return;
+      return null;
     }
     let url;
     try {
       url = new URL(properties.WEBSITE);
     } catch (error) {
       console.error("Ignored invalid official trail URL:", error);
-      return;
+      return null;
     }
     if (url.protocol !== "https:") {
-      return;
+      return null;
     }
     const link = document.createElement("a");
     link.className = "official-trail-link";
@@ -704,7 +888,7 @@
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "Open official trail introduction ↗";
-    detailContent.append(link);
+    return link;
   }
 
   function addDefinition(list, label, value) {
