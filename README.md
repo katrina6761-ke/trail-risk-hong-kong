@@ -4,7 +4,7 @@ A static Web GIS prototype for exploring the CRITIC risk index and supplied Jenk
 
 ## Prototype features
 
-- Five-section navigation: Background, Study Area & Data, Method, Analysis & Results, and Advice.
+- Five-section navigation: Background, Platform, Data, Method, and Advice, in page-reading order.
 - Anchored, responsive page sections with an active navigation indicator.
 - Background overview with hiking-visitor context and a three-slide auto-rotating carousel.
 - Accident-case chart and five-year average derived from `事故统计表-2018-2024.xlsx`.
@@ -18,6 +18,7 @@ A static Web GIS prototype for exploring the CRITIC risk index and supplied Jenk
 - Click a segment to inspect its risk rating, factor scores, route metadata, and official hiking.gov.hk trail link.
 - Screenshot-matched dashboard layout: full-height filter sidebar, a compact upper details/toolbar band, and a large map beneath it.
 - Enlarged dashboard typography and a full-width selected-details panel above the map.
+- Body, navigation, and interface text use a one-pixel larger type size while page headings retain their established sizes.
 - Browser-side conversion from Hong Kong 1980 Grid System (EPSG:2326) to WGS 84 and then GCJ-02 for AMap.
 
 The map uses the Jenks class ID and CRITIC risk index supplied in the updated GeoJSON; it does not recalculate either. Legend ranges show the minimum and maximum observed CRITIC index in each class. These classes are research classifications, not official safety ratings or real-time trail conditions.

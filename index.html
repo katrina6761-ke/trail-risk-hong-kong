@@ -21,9 +21,9 @@
       </a>
       <nav class="site-nav" aria-label="Main navigation">
         <a class="nav-link" href="#home">Background</a>
-        <a class="nav-link" href="#study-area">Study Area &amp; Data</a>
+        <a class="nav-link" href="#analysis">Platform</a>
+        <a class="nav-link" href="#study-area">Data</a>
         <a class="nav-link" href="#method">Method</a>
-        <a class="nav-link" href="#analysis">Analysis &amp; Results</a>
         <a class="nav-link" href="#advice">Advice</a>
       </nav>
     </header>
@@ -138,170 +138,10 @@
         </div>
       </section>
 
-      <section id="study-area" class="page-section" aria-labelledby="study-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">02 / STUDY AREA &amp; DATA</p>
-            <h2 id="study-title">A territory-wide trail network and multi-source GIS data</h2>
-          </div>
-          <p class="section-lead">
-            The proposal defines the study area as hiking trails in Hong Kong’s country parks.
-            It combines terrain, habitat, hazard, access and emergency-support data for section-level analysis.
-          </p>
-        </div>
-        <div class="study-metrics">
-          <div><strong>167</strong><span>AFCD hiking trails in the proposal study scope</span></div>
-          <div><strong>25</strong><span>country parks</span></div>
-          <div><strong>22</strong><span>special areas</span></div>
-          <div><strong id="study-segment-count">1,592</strong><span>segments in the current mapped GeoJSON</span></div>
-        </div>
-        <div class="info-grid three-column">
-          <article class="info-card">
-            <span class="card-kicker">TERRAIN &amp; HAZARDS</span>
-            <h3>Physical environment</h3>
-            <p>
-              Digital Terrain Model (raster) supports slope analysis; the Territory-wide Terrestrial
-              Habitat Map supports land-cover classification; boulder points and historical landslide
-              catchments support proximity and overlay analysis.
-            </p>
-          </article>
-          <article class="info-card">
-            <span class="card-kicker">ROUTES &amp; ACCESS</span>
-            <h3>Network and nearby facilities</h3>
-            <p>
-              AFCD Hiking Trails in Country Parks define the route network. Road networks, trail distance
-              posts, fire stations, shelters, refreshment kiosks and public water-filling stations support
-              proximity, spacing and accessibility measures.
-            </p>
-          </article>
-          <article class="info-card">
-            <span class="card-kicker">CONNECTIVITY &amp; PROVENANCE</span>
-            <h3>Signal data and coordinate handling</h3>
-            <p>
-              The proposal identifies OFCA mobile-coverage maps and CSDI as source channels. The supplied
-              route file uses EPSG:2326 and is transformed in the browser. Dataset-specific download
-              or acquisition dates are not recorded in the proposal or current GeoJSON.
-            </p>
-          </article>
-        </div>
-        <details class="source-inventory" open>
-          <summary>Data layers and proposed processing</summary>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Data layer</th>
-                  <th scope="col">Proposed use in the assessment</th>
-                  <th scope="col">Source named in proposal</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Administrative boundaries and base geographic information</td><td>Provide geographic context for the Hong Kong study area and map presentation.</td><td>CSDI</td></tr>
-                <tr><td>Digital Terrain Model (raster)</td><td>Derive slope and average slope for each trail section.</td><td>CSDI</td></tr>
-                <tr><td>Territory-wide Terrestrial Habitat Map (polygon)</td><td>Overlay trail sections to classify land cover.</td><td>CSDI</td></tr>
-                <tr><td>Boulder data (point) &amp; historical landslide catchments</td><td>Count/proximity analysis for boulders; overlay to flag sections affected by historical landslide catchments.</td><td>CSDI</td></tr>
-                <tr><td>Hiking Trails in Country Parks (line)</td><td>Define the study routes and divide them into sections.</td><td>AFCD / government spatial data platform</td></tr>
-                <tr><td>Road network (line)</td><td>Measure distance from each section to the nearest public road.</td><td>CSDI</td></tr>
-                <tr><td>Fire stations, distance posts, shelters, kiosks &amp; water-filling stations (points)</td><td>Assess emergency access, post spacing, shelter proximity and access to supplies.</td><td>CSDI</td></tr>
-                <tr><td>Mobile coverage of country-park trails</td><td>Identify coverage gaps and calculate the share of each section with coverage.</td><td>OFCA digital maps</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </details>
-        <div class="data-source-note">
-          <strong>Data currency to document:</strong> record the source publication, acquisition or download date for
-          each layer before interpreting the map as current conditions.
-        </div>
-      </section>
-
-      <section id="method" class="page-section" aria-labelledby="method-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">03 / METHOD</p>
-            <h2 id="method-title">A multi-criteria assessment workflow</h2>
-          </div>
-          <p class="section-lead">
-            The proposal describes a planned workflow that combines expert judgement, indicator data
-            and GIS analysis. The website displays the supplied results; it does not recalculate them.
-          </p>
-        </div>
-        <div class="method-steps">
-          <article class="method-step">
-            <span class="step-number">01</span>
-            <div>
-              <h3>Define indicators and score segments</h3>
-              <p>
-                Review literature to select natural, social and human factors, then use GIS overlay
-                and proximity analysis to derive scores for each trail section.
-              </p>
-            </div>
-          </article>
-          <article class="method-step">
-            <span class="step-number">02</span>
-            <div>
-              <h3>Combine subjective and objective weights</h3>
-              <p>
-                The proposal uses AHP pairwise comparisons for expert-informed weights and plans to
-                introduce entropy weights from data variation as the full dataset becomes available.
-              </p>
-            </div>
-          </article>
-          <article class="method-step">
-            <span class="step-number">03</span>
-            <div>
-              <h3>Map and classify the results</h3>
-              <p>
-                The proposal specifies ArcGIS Pro 3.0.1 for spatial processing, followed by an
-                interactive Web GIS view for hikers and managers.
-              </p>
-            </div>
-          </article>
-        </div>
-        <div class="theory-note">
-          <span class="card-kicker">CONCEPTUAL FRAMEWORK</span>
-          <p>
-            Drawing on accident-system and human-factors perspectives, the proposal treats safety as
-            an interaction among environmental hazards, trail infrastructure, hiker exposure and
-            emergency response. Hikers’ fitness, experience and risk awareness can shape how they
-            respond to similar conditions; this prototype maps segment attributes and does not
-            personalize a score to an individual.
-          </p>
-        </div>
-        <div class="weight-panel">
-          <div class="weight-heading">
-            <div>
-              <span class="card-kicker">PROPOSAL INDICATOR FRAMEWORK</span>
-              <h3>Proposed global weights</h3>
-            </div>
-            <p>Weights below are from the proposal’s preliminary AHP table—not recalculated from the current GeoJSON.</p>
-          </div>
-          <div class="dimension-share" aria-label="Proposed dimension weights">
-            <div class="dimension-share-natural"><span>Natural factors</span><strong>80%</strong></div>
-            <div class="dimension-share-social"><span>Society &amp; human factors</span><strong>20%</strong></div>
-          </div>
-          <div class="weight-chart" aria-label="Proposed global indicator weights">
-            <div class="weight-row"><span>Terrain slope</span><span class="weight-track"><i style="--weight: 24%"></i></span><strong>24%</strong></div>
-            <div class="weight-row"><span>Surface type</span><span class="weight-track"><i style="--weight: 20%"></i></span><strong>20%</strong></div>
-            <div class="weight-row"><span>Cliffs &amp; exposed ridges</span><span class="weight-track"><i style="--weight: 16%"></i></span><strong>16%</strong></div>
-            <div class="weight-row"><span>Accident history</span><span class="weight-track"><i style="--weight: 12%"></i></span><strong>12%</strong></div>
-            <div class="weight-row"><span>Land-cover type</span><span class="weight-track"><i style="--weight: 8%"></i></span><strong>8%</strong></div>
-            <div class="weight-row"><span>Distance to public road</span><span class="weight-track"><i style="--weight: 7%"></i></span><strong>7%</strong></div>
-            <div class="weight-row"><span>Mobile signal coverage</span><span class="weight-track"><i style="--weight: 6%"></i></span><strong>6%</strong></div>
-            <div class="weight-row"><span>Distance from trailhead</span><span class="weight-track"><i style="--weight: 4%"></i></span><strong>4%</strong></div>
-            <div class="weight-row"><span>Supply-point density</span><span class="weight-track"><i style="--weight: 3%"></i></span><strong>3%</strong></div>
-          </div>
-        </div>
-        <aside class="method-caveat">
-          <strong>Method–data alignment:</strong> the proposal describes AHP with a planned entropy-weight
-          adjustment, while the current GeoJSON contains <code>CRITIC_Risk_Index</code> and
-          <code>Jenks_Class_ID</code>. This prototype uses those supplied fields as-is; confirm and document
-          the final weighting formula and classification method before presenting them as the same workflow.
-        </aside>
-      </section>
-
       <section id="analysis" class="page-section" aria-labelledby="analysis-title">
         <div class="section-heading">
           <div>
+            <p class="eyebrow">02 / PLATFORM</p>
             <h2 id="analysis-title">Explore the spatial pattern</h2>
           </div>
           <div class="analysis-intro">
@@ -492,6 +332,167 @@
           </div>
         </div>
       </section>
+      </section>
+
+      <section id="study-area" class="page-section" aria-labelledby="study-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / DATA</p>
+            <h2 id="study-title">A territory-wide trail network and multi-source GIS data</h2>
+          </div>
+          <p class="section-lead">
+            The proposal defines the study area as hiking trails in Hong Kong’s country parks.
+            It combines terrain, habitat, hazard, access and emergency-support data for section-level analysis.
+          </p>
+        </div>
+        <div class="study-metrics">
+          <div><strong>167</strong><span>AFCD hiking trails in the proposal study scope</span></div>
+          <div><strong>25</strong><span>country parks</span></div>
+          <div><strong>22</strong><span>special areas</span></div>
+          <div><strong id="study-segment-count">1,592</strong><span>segments in the current mapped GeoJSON</span></div>
+        </div>
+        <div class="info-grid three-column">
+          <article class="info-card">
+            <span class="card-kicker">TERRAIN &amp; HAZARDS</span>
+            <h3>Physical environment</h3>
+            <p>
+              Digital Terrain Model (raster) supports slope analysis; the Territory-wide Terrestrial
+              Habitat Map supports land-cover classification; boulder points and historical landslide
+              catchments support proximity and overlay analysis.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="card-kicker">ROUTES &amp; ACCESS</span>
+            <h3>Network and nearby facilities</h3>
+            <p>
+              AFCD Hiking Trails in Country Parks define the route network. Road networks, trail distance
+              posts, fire stations, shelters, refreshment kiosks and public water-filling stations support
+              proximity, spacing and accessibility measures.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="card-kicker">CONNECTIVITY &amp; PROVENANCE</span>
+            <h3>Signal data and coordinate handling</h3>
+            <p>
+              The proposal identifies OFCA mobile-coverage maps and CSDI as source channels. The supplied
+              route file uses EPSG:2326 and is transformed in the browser. Dataset-specific download
+              or acquisition dates are not recorded in the proposal or current GeoJSON.
+            </p>
+          </article>
+        </div>
+        <details class="source-inventory" open>
+          <summary>Data layers and proposed processing</summary>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Data layer</th>
+                  <th scope="col">Proposed use in the assessment</th>
+                  <th scope="col">Source named in proposal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Administrative boundaries and base geographic information</td><td>Provide geographic context for the Hong Kong study area and map presentation.</td><td>CSDI</td></tr>
+                <tr><td>Digital Terrain Model (raster)</td><td>Derive slope and average slope for each trail section.</td><td>CSDI</td></tr>
+                <tr><td>Territory-wide Terrestrial Habitat Map (polygon)</td><td>Overlay trail sections to classify land cover.</td><td>CSDI</td></tr>
+                <tr><td>Boulder data (point) &amp; historical landslide catchments</td><td>Count/proximity analysis for boulders; overlay to flag sections affected by historical landslide catchments.</td><td>CSDI</td></tr>
+                <tr><td>Hiking Trails in Country Parks (line)</td><td>Define the study routes and divide them into sections.</td><td>AFCD / government spatial data platform</td></tr>
+                <tr><td>Road network (line)</td><td>Measure distance from each section to the nearest public road.</td><td>CSDI</td></tr>
+                <tr><td>Fire stations, distance posts, shelters, kiosks &amp; water-filling stations (points)</td><td>Assess emergency access, post spacing, shelter proximity and access to supplies.</td><td>CSDI</td></tr>
+                <tr><td>Mobile coverage of country-park trails</td><td>Identify coverage gaps and calculate the share of each section with coverage.</td><td>OFCA digital maps</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+        <div class="data-source-note">
+          <strong>Data currency to document:</strong> record the source publication, acquisition or download date for
+          each layer before interpreting the map as current conditions.
+        </div>
+      </section>
+
+      <section id="method" class="page-section" aria-labelledby="method-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 / METHOD</p>
+            <h2 id="method-title">A multi-criteria assessment workflow</h2>
+          </div>
+          <p class="section-lead">
+            The proposal describes a planned workflow that combines expert judgement, indicator data
+            and GIS analysis. The website displays the supplied results; it does not recalculate them.
+          </p>
+        </div>
+        <div class="method-steps">
+          <article class="method-step">
+            <span class="step-number">01</span>
+            <div>
+              <h3>Define indicators and score segments</h3>
+              <p>
+                Review literature to select natural, social and human factors, then use GIS overlay
+                and proximity analysis to derive scores for each trail section.
+              </p>
+            </div>
+          </article>
+          <article class="method-step">
+            <span class="step-number">02</span>
+            <div>
+              <h3>Combine subjective and objective weights</h3>
+              <p>
+                The proposal uses AHP pairwise comparisons for expert-informed weights and plans to
+                introduce entropy weights from data variation as the full dataset becomes available.
+              </p>
+            </div>
+          </article>
+          <article class="method-step">
+            <span class="step-number">03</span>
+            <div>
+              <h3>Map and classify the results</h3>
+              <p>
+                The proposal specifies ArcGIS Pro 3.0.1 for spatial processing, followed by an
+                interactive Web GIS view for hikers and managers.
+              </p>
+            </div>
+          </article>
+        </div>
+        <div class="theory-note">
+          <span class="card-kicker">CONCEPTUAL FRAMEWORK</span>
+          <p>
+            Drawing on accident-system and human-factors perspectives, the proposal treats safety as
+            an interaction among environmental hazards, trail infrastructure, hiker exposure and
+            emergency response. Hikers’ fitness, experience and risk awareness can shape how they
+            respond to similar conditions; this prototype maps segment attributes and does not
+            personalize a score to an individual.
+          </p>
+        </div>
+        <div class="weight-panel">
+          <div class="weight-heading">
+            <div>
+              <span class="card-kicker">PROPOSAL INDICATOR FRAMEWORK</span>
+              <h3>Proposed global weights</h3>
+            </div>
+            <p>Weights below are from the proposal’s preliminary AHP table—not recalculated from the current GeoJSON.</p>
+          </div>
+          <div class="dimension-share" aria-label="Proposed dimension weights">
+            <div class="dimension-share-natural"><span>Natural factors</span><strong>80%</strong></div>
+            <div class="dimension-share-social"><span>Society &amp; human factors</span><strong>20%</strong></div>
+          </div>
+          <div class="weight-chart" aria-label="Proposed global indicator weights">
+            <div class="weight-row"><span>Terrain slope</span><span class="weight-track"><i style="--weight: 24%"></i></span><strong>24%</strong></div>
+            <div class="weight-row"><span>Surface type</span><span class="weight-track"><i style="--weight: 20%"></i></span><strong>20%</strong></div>
+            <div class="weight-row"><span>Cliffs &amp; exposed ridges</span><span class="weight-track"><i style="--weight: 16%"></i></span><strong>16%</strong></div>
+            <div class="weight-row"><span>Accident history</span><span class="weight-track"><i style="--weight: 12%"></i></span><strong>12%</strong></div>
+            <div class="weight-row"><span>Land-cover type</span><span class="weight-track"><i style="--weight: 8%"></i></span><strong>8%</strong></div>
+            <div class="weight-row"><span>Distance to public road</span><span class="weight-track"><i style="--weight: 7%"></i></span><strong>7%</strong></div>
+            <div class="weight-row"><span>Mobile signal coverage</span><span class="weight-track"><i style="--weight: 6%"></i></span><strong>6%</strong></div>
+            <div class="weight-row"><span>Distance from trailhead</span><span class="weight-track"><i style="--weight: 4%"></i></span><strong>4%</strong></div>
+            <div class="weight-row"><span>Supply-point density</span><span class="weight-track"><i style="--weight: 3%"></i></span><strong>3%</strong></div>
+          </div>
+        </div>
+        <aside class="method-caveat">
+          <strong>Method–data alignment:</strong> the proposal describes AHP with a planned entropy-weight
+          adjustment, while the current GeoJSON contains <code>CRITIC_Risk_Index</code> and
+          <code>Jenks_Class_ID</code>. This prototype uses those supplied fields as-is; confirm and document
+          the final weighting formula and classification method before presenting them as the same workflow.
+        </aside>
       </section>
 
       <section id="advice" class="page-section advice-section" aria-labelledby="advice-title">
